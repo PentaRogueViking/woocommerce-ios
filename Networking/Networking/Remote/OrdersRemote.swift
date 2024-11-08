@@ -192,6 +192,8 @@ public class OrdersRemote: Remote {
                         params[Order.CodingKeys.customerNote.rawValue] = order.customerNote
                     case .customerID:
                         params[Order.CodingKeys.customerID.rawValue] = order.customerID
+                    case .currency:
+                        params[Order.CodingKeys.currency.rawValue] = order.currency
                     }
                 }
 
@@ -488,5 +490,6 @@ public extension OrdersRemote {
         case couponLines
         case customerNote
         case customerID
+        case currency
     }
 }

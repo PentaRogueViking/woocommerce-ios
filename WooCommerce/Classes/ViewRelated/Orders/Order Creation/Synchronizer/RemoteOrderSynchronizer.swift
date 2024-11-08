@@ -15,7 +15,7 @@ final class RemoteOrderSynchronizer: OrderSynchronizer {
         $state
     }
 
-    @Published private(set) var order: Order = OrderFactory.emptyNewOrder
+    @Published private(set) var order: Order = OrderFactory.emptyNewOrder.copy(currency: ServiceLocator.currencySettings.currencyCode.rawValue)
 
     var orderPublisher: Published<Order>.Publisher {
         $order
