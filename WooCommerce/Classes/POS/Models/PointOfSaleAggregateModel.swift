@@ -37,23 +37,25 @@ protocol PointOfSaleAggregateModelProtocol {
     func checkOut() async
 }
 
-class PointOfSaleAggregateModel: ObservableObject, PointOfSaleAggregateModelProtocol {
-    @Published private(set) var orderStage: PointOfSaleOrderStage = .building
+@available(iOS 17.0, *)
+@Observable
+class PointOfSaleAggregateModel: PointOfSaleAggregateModelProtocol {
+    private(set) var orderStage: PointOfSaleOrderStage = .building
 
-    @Published private(set) var cardReaderConnectionStatus: CardPresentPaymentReaderConnectionStatus = .disconnected
-    @Published private(set) var paymentState: PointOfSalePaymentState
-    @Published var cardPresentPaymentAlertViewModel: PointOfSaleCardPresentPaymentAlertType?
-    @Published private(set) var cardPresentPaymentInlineMessage: PointOfSaleCardPresentPaymentMessageType?
-    @Published var cardPresentPaymentOnboardingViewModel: CardPresentPaymentsOnboardingViewModel?
+    private(set) var cardReaderConnectionStatus: CardPresentPaymentReaderConnectionStatus = .disconnected
+    private(set) var paymentState: PointOfSalePaymentState
+    var cardPresentPaymentAlertViewModel: PointOfSaleCardPresentPaymentAlertType?
+    private(set) var cardPresentPaymentInlineMessage: PointOfSaleCardPresentPaymentMessageType?
+    var cardPresentPaymentOnboardingViewModel: CardPresentPaymentsOnboardingViewModel?
     private var onOnboardingCancellation: (() -> Void)?
 
-    @Published private(set) var itemsViewState: ItemsViewState = ItemsViewState(containerState: .loading,
+    private(set) var itemsViewState: ItemsViewState = ItemsViewState(containerState: .loading,
                                                                                 itemsStack: ItemsStackState(root: .loading([]),
                                                                                                             itemStates: [:]))
 
-    @Published private(set) var cart: [CartItem] = []
+    private(set) var cart: [CartItem] = []
 
-    @Published private(set) var orderState: PointOfSaleOrderState = .idle
+    private(set) var orderState: PointOfSaleOrderState = .idle
 
     private let itemsController: PointOfSaleItemsControllerProtocol
 
@@ -85,9 +87,14 @@ class PointOfSaleAggregateModel: ObservableObject, PointOfSaleAggregateModelProt
 }
 
 // MARK: - ItemList
+@available(iOS 17.0, *)
 extension PointOfSaleAggregateModel {
     private func publishItemsViewState() {
-        itemsController.itemsViewStatePublisher.assign(to: &$itemsViewState)
+        itemsController.itemsViewStatePublisher
+            .sink { [weak self] itemsViewState in
+                self?.itemsViewState = itemsViewState
+            }
+            .store(in: &cancellables)
     }
 
     @MainActor
@@ -102,7 +109,7 @@ extension PointOfSaleAggregateModel {
 }
 
 // MARK: - Cart
-
+@available(iOS 17.0, *)
 extension PointOfSaleAggregateModel {
     func addToCart(_ item: POSOrderableItem) {
         cart.insert(CartItem(id: UUID(), item: item, quantity: 1), at: 0)
@@ -134,11 +141,15 @@ extension PointOfSaleAggregateModel {
 }
 
 // MARK: - Card payments
-
+@available(iOS 17.0, *)
 extension PointOfSaleAggregateModel {
     private func publishCardReaderConnectionStatus() {
         // When adopting Observable, we can use `assign(to: on:)` here instead
-        cardPresentPaymentService.readerConnectionStatusPublisher.assign(to: &$cardReaderConnectionStatus)
+        cardPresentPaymentService.readerConnectionStatusPublisher
+            .sink(receiveValue: { [weak self] connectionStatus in
+                self?.cardReaderConnectionStatus = connectionStatus
+            })
+            .store(in: &cancellables)
     }
 
     func connectCardReader() {
@@ -159,7 +170,7 @@ extension PointOfSaleAggregateModel {
     /// e.g. when the TotalsView goes offscreen.
     private func startPaymentWhenCardReaderConnected() async {
         guard case .connected = cardReaderConnectionStatus else {
-            return startPaymentOnCardReaderConnection = $cardReaderConnectionStatus
+            return startPaymentOnCardReaderConnection = cardPresentPaymentService.readerConnectionStatusPublisher
                 .filter { status in
                     switch status {
                     case .connected:
@@ -237,16 +248,16 @@ extension PointOfSaleAggregateModel {
     }
 
     private func setupReaderReconnectionObservation() {
-        $orderStage.sink(receiveValue: { [weak self] stage in
-            guard let self else { return }
-            switch stage {
-            case .building:
-                cancelCardReaderPreparation()
-            case .finalizing:
-                observeReaderReconnection()
-            }
-        })
-        .store(in: &cancellables)
+//        $orderStage.sink(receiveValue: { [weak self] stage in
+//            guard let self else { return }
+//            switch stage {
+//            case .building:
+//                cancelCardReaderPreparation()
+//            case .finalizing:
+//                observeReaderReconnection()
+//            }
+//        })
+//        .store(in: &cancellables)
     }
 
     private func cancelCardReaderPreparation() {
@@ -256,7 +267,7 @@ extension PointOfSaleAggregateModel {
     }
 
     private func observeReaderReconnection() {
-        cardReaderDisconnection = $cardReaderConnectionStatus
+        cardReaderDisconnection = cardPresentPaymentService.readerConnectionStatusPublisher
             .filter({ $0 == .disconnected })
             .sink { [weak self] _ in
                 Task { @MainActor [weak self] in
@@ -285,6 +296,7 @@ extension PointOfSaleAggregateModel {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleAggregateModel {
     func publishPaymentMessages() {
         cardPresentPaymentService.paymentEventPublisher
@@ -297,13 +309,19 @@ private extension PointOfSaleAggregateModel {
                 }
                 return alertType
             }
-            .assign(to: &$cardPresentPaymentAlertViewModel)
+            .sink(receiveValue: { [weak self] alertType in
+                self?.cardPresentPaymentAlertViewModel = alertType
+            })
+            .store(in: &cancellables)
 
         cardPresentPaymentService.paymentEventPublisher
             .map { [weak self] event -> PointOfSaleCardPresentPaymentMessageType? in
                 self?.mapCardPresentPaymentEventToMessageType(event)
             }
-            .assign(to: &$cardPresentPaymentInlineMessage)
+            .sink(receiveValue: { [weak self] message in
+                self?.cardPresentPaymentInlineMessage = message
+            })
+            .store(in: &cancellables)
 
         cardPresentPaymentService.paymentEventPublisher
             .compactMap { [weak self] paymentEvent -> PointOfSalePaymentState? in
@@ -314,7 +332,10 @@ private extension PointOfSaleAggregateModel {
 
                 return newPaymentState
             }
-            .assign(to: &$paymentState)
+            .sink(receiveValue: { [weak self] paymentState in
+                self?.paymentState = paymentState
+            })
+            .store(in: &cancellables)
 
         cardPresentPaymentService.paymentEventPublisher
             .map { [weak self] event -> CardPresentPaymentsOnboardingViewModel? in
@@ -325,7 +346,10 @@ private extension PointOfSaleAggregateModel {
                 onOnboardingCancellation = onCancel
                 return viewModel
             }
-            .assign(to: &$cardPresentPaymentOnboardingViewModel)
+            .sink(receiveValue: { [weak self] onboardingViewModel in
+                self?.cardPresentPaymentOnboardingViewModel = onboardingViewModel
+            })
+            .store(in: &cancellables)
     }
 
     /// Maps PaymentEvent to POSMessageType and annonates additional information if necessary
@@ -375,7 +399,7 @@ private extension PointOfSaleAggregateModel {
 }
 
 // MARK: - Order syncing
-
+@available(iOS 17.0, *)
 extension PointOfSaleAggregateModel {
     @MainActor
     func checkOut() async {
@@ -389,10 +413,14 @@ extension PointOfSaleAggregateModel {
     func publishOrderState() {
         orderController.orderStatePublisher
             .map { $0.externalState }
-            .assign(to: &$orderState)
+            .sink(receiveValue: { [weak self] orderState in
+                self?.orderState = orderState
+            })
+            .store(in: &cancellables)
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleAggregateModel {
     enum Constants {
         static let initialPage: Int = 1

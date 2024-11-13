@@ -1,7 +1,8 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct PaymentsActionButtons: View {
-    @EnvironmentObject private var posModel: PointOfSaleAggregateModel
+    @Environment(PointOfSaleAggregateModel.self) private var posModel: PointOfSaleAggregateModel
     @Binding var isShowingSendReceiptView: Bool
     @Binding private(set) var isShowingReceiptNotEligibleBanner: Bool
 
@@ -22,6 +23,7 @@ struct PaymentsActionButtons: View {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PaymentsActionButtons {
     var sendReceiptButton: some View {
         Button(action: {
@@ -61,6 +63,7 @@ private extension PaymentsActionButtons {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PaymentsActionButtons {
     func handleSendReceiptAction() async {
         let isEligible = await checkReceiptEligibility()
@@ -80,6 +83,7 @@ private extension PaymentsActionButtons {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PaymentsActionButtons {
     enum Constants {
         static let buttonSpacing: CGFloat = 12
@@ -101,12 +105,13 @@ private extension PaymentsActionButtons {
 }
 
 #if DEBUG
+@available(iOS 17.0, *)
 #Preview {
     let posModel = PointOfSaleAggregateModel(
         itemsController: PointOfSalePreviewItemsController(),
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
     PaymentsActionButtons(isShowingSendReceiptView: .constant(false), isShowingReceiptNotEligibleBanner: .constant(true))
-        .environmentObject(posModel)
+        .environment(posModel)
 }
 #endif

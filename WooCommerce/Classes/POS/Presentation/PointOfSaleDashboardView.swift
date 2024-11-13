@@ -1,7 +1,8 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct PointOfSaleDashboardView: View {
-    @EnvironmentObject private var posModel: PointOfSaleAggregateModel
+    @Environment(PointOfSaleAggregateModel.self) private var posModel: PointOfSaleAggregateModel
 
     @State private var showExitPOSModal: Bool = false
     @State private var showSupport: Bool = false
@@ -9,6 +10,8 @@ struct PointOfSaleDashboardView: View {
     @State private var floatingSize: CGSize = .zero
 
     var body: some View {
+        @Bindable var posModel = posModel
+
         ZStack(alignment: .bottomLeading) {
             switch posModel.itemsViewState.containerState {
             case .loading:
@@ -101,6 +104,7 @@ struct PointOfSaleDashboardView: View {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleDashboardView {
     var supportForm: some View {
         NavigationView {
@@ -143,6 +147,7 @@ extension EnvironmentValues {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleDashboardView {
     enum Constants {
         // For the moment we're just considering landscape for the POS mode
@@ -164,6 +169,7 @@ private extension PointOfSaleDashboardView {
 }
 
 #if DEBUG
+@available(iOS 17.0, *)
 #Preview {
     return NavigationStack {
         PointOfSaleDashboardView()

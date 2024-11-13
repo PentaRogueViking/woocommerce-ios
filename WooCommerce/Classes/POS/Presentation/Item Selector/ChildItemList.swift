@@ -2,10 +2,11 @@ import SwiftUI
 import Yosemite
 
 /// Displays a scrollable list of child items in POS.
+@available(iOS 17.0, *)
 struct ChildItemList: View {
     private let parentItem: POSItem
     private let title: String
-    @EnvironmentObject private var posModel: PointOfSaleAggregateModel
+    @Environment(PointOfSaleAggregateModel.self) private var posModel: PointOfSaleAggregateModel
     @Environment(\.dismiss) private var dismiss
 
     private var state: ItemListState {
@@ -42,6 +43,7 @@ struct ChildItemList: View {
     }
 }
 
+@available(iOS 17.0, *)
 private extension ChildItemList {
     @ViewBuilder var headerView: some View {
         HStack {
@@ -87,6 +89,7 @@ private extension ChildItemList {
     }
 }
 
+@available(iOS 17.0, *)
 private extension ChildItemList {
     enum Localization {
         static let back = NSLocalizedString(
@@ -102,7 +105,7 @@ private extension ChildItemList {
 }
 
 #if DEBUG
-
+@available(iOS 17.0, *)
 #Preview("Variable product child items") {
     let parentProduct = POSVariableParentProduct(
         id: .init(),
@@ -144,9 +147,10 @@ private extension ChildItemList {
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
     return ChildItemList(parentItem: parentItem, title: parentProduct.name)
-        .environmentObject(posModel)
+        .environment(posModel)
 }
 
+@available(iOS 17.0, *)
 #Preview("Variable items load error") {
     let parentProduct = POSVariableParentProduct(
         id: .init(),
@@ -167,7 +171,7 @@ private extension ChildItemList {
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
     return ChildItemList(parentItem: parentItem, title: parentProduct.name)
-        .environmentObject(posModel)
+        .environment(posModel)
 }
 
 #endif

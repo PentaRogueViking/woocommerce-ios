@@ -32,7 +32,8 @@ struct HubMenu: View {
                     viewModel.setupMenuElements()
                 }
                 .fullScreenCover(isPresented: $viewModel.showsPOS) {
-                    if let cardPresentPaymentService = viewModel.cardPresentPaymentService,
+                    if #available(iOS 17.0, *),
+                       let cardPresentPaymentService = viewModel.cardPresentPaymentService,
                        let receiptService = POSReceiptService(siteID: viewModel.siteID,
                                                               credentials: viewModel.credentials),
                        let orderService = POSOrderService(siteID: viewModel.siteID,

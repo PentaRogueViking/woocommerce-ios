@@ -1,7 +1,8 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct CartView: View {
-    @EnvironmentObject private var posModel: PointOfSaleAggregateModel
+    @Environment(PointOfSaleAggregateModel.self) private var posModel: PointOfSaleAggregateModel
     private let viewHelper = CartViewHelper()
 
     @Environment(\.floatingControlAreaSize) var floatingControlAreaSize: CGSize
@@ -135,6 +136,7 @@ private struct ScrollOffSetPreferenceKey: PreferenceKey {
     }
 }
 
+@available(iOS 17.0, *)
 private extension CartView {
     var backgroundColor: Color {
         switch colorScheme {
@@ -158,6 +160,7 @@ private extension CartView {
     }
 }
 
+@available(iOS 17.0, *)
 private extension CartView {
     enum Constants {
         static let primaryFont: POSFontStyle = .posTitleEmphasized
@@ -200,6 +203,7 @@ private extension CartView {
 
 /// View sub-components
 ///
+@available(iOS 17.0, *)
 private extension CartView {
     var checkoutButton: some View {
         Button {
@@ -253,6 +257,7 @@ private extension CartView {
 }
 
 #if DEBUG
+@available(iOS 17.0, *)
 #Preview {
     let itemsController = PointOfSalePreviewItemsController()
     let posModel = PointOfSaleAggregateModel(
@@ -260,6 +265,6 @@ private extension CartView {
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
     return CartView()
-        .environmentObject(posModel)
+        .environment(posModel)
 }
 #endif

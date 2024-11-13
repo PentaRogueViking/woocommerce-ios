@@ -1,8 +1,9 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct PointOfSaleCollectCashView: View {
     @Environment(\.colorScheme) var colorScheme
-    @EnvironmentObject private var posModel: PointOfSaleAggregateModel
+    @Environment(PointOfSaleAggregateModel.self) private var posModel: PointOfSaleAggregateModel
     @FocusState private var isTextFieldFocused: Bool
 
     private let viewHelper = CollectCashViewHelper()
@@ -121,6 +122,7 @@ struct PointOfSaleCollectCashView: View {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleCollectCashView {
     private func updateChangeDueMessage() {
         changeDueMessage = viewHelper.updatechangeDueMessage(
@@ -138,6 +140,7 @@ private extension PointOfSaleCollectCashView {
         }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleCollectCashView {
     enum Constants {
         static let buttonSpacing: CGFloat = 12
@@ -182,12 +185,13 @@ private extension PointOfSaleCollectCashView {
 }
 
 #if DEBUG
+@available(iOS 17.0, *)
 #Preview {
     let posModel = PointOfSaleAggregateModel(
         itemsController: PointOfSalePreviewItemsController(),
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
     PointOfSaleCollectCashView(orderTotal: "$1.23")
-        .environmentObject(posModel)
+        .environment(posModel)
 }
 #endif

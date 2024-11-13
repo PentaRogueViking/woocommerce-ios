@@ -1,7 +1,8 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct PointOfSaleEntryPointView: View {
-    @StateObject private var posModel: PointOfSaleAggregateModel
+    @State private var posModel: PointOfSaleAggregateModel
     @StateObject private var posModalManager = POSModalManager()
 
     private let onPointOfSaleModeActiveStateChange: ((Bool) -> Void)
@@ -17,13 +18,13 @@ struct PointOfSaleEntryPointView: View {
             cardPresentPaymentService: cardPresentPaymentService,
             orderController: orderController)
 
-        self._posModel = StateObject(wrappedValue: posModel)
+        self._posModel = State(wrappedValue: posModel)
     }
 
     var body: some View {
         PointOfSaleDashboardView()
         .environmentObject(posModalManager)
-        .environmentObject(posModel)
+        .environment(posModel)
         .onAppear {
             onPointOfSaleModeActiveStateChange(true)
         }
@@ -34,6 +35,7 @@ struct PointOfSaleEntryPointView: View {
 }
 
 #if DEBUG
+@available(iOS 17.0, *)
 #Preview {
     PointOfSaleEntryPointView(itemsController: PointOfSalePreviewItemsController(),
                               onPointOfSaleModeActiveStateChange: { _ in },

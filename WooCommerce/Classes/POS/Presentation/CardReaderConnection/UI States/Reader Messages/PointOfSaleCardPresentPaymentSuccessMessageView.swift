@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct PointOfSaleCardPresentPaymentSuccessMessageView: View {
 
     let viewModel: PointOfSaleCardPresentPaymentSuccessMessageViewModel
@@ -76,6 +77,7 @@ struct PointOfSaleCardPresentPaymentSuccessMessageView: View {
     }
 }
 
+@available(iOS 17.0, *)
 private extension PointOfSaleCardPresentPaymentSuccessMessageView {
     enum Constants {
         static let imageName: String = "checkmark"
@@ -89,6 +91,7 @@ private extension PointOfSaleCardPresentPaymentSuccessMessageView {
     }
 }
 
+@available(iOS 17.0, *)
 #Preview {
     @Namespace var namespace
 
