@@ -4,7 +4,6 @@ import protocol Yosemite.POSItem
 struct CartView: View {
     @EnvironmentObject private var posModel: PointOfSaleAggregateModel
 
-    @ObservedObject private var viewModel: PointOfSaleDashboardViewModel
     @ObservedObject private var cartViewModel: CartViewModel
     @Environment(\.floatingControlAreaSize) var floatingControlAreaSize: CGSize
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
@@ -16,8 +15,7 @@ struct CartView: View {
         posModel.cart.isNotEmpty && offSetPosition < 0
     }
 
-    init(viewModel: PointOfSaleDashboardViewModel, cartViewModel: CartViewModel) {
-        self.viewModel = viewModel
+    init(cartViewModel: CartViewModel) {
         self.cartViewModel = cartViewModel
     }
 
@@ -148,7 +146,9 @@ private extension CartView {
             return posModel.cart.isEmpty ? Color.posTertiaryBackground : Color.posSecondaryBackground
         }
     }
+}
 
+extension CartView {
     var shouldPreventCartEditing: Bool {
         guard posModel.paymentState.allowsCartEditing else {
             return true
@@ -278,15 +278,8 @@ import class WooFoundation.MockAnalyticsProviderPreview
         orderService: POSOrderPreviewService())
     // TODO:
     // Simplify this by mocking `CartViewModel`
-    let totalsViewModel = TotalsViewModel(posModel: posModel,
-                                          cardPresentPaymentService: CardPresentPaymentPreviewService())
     let cartViewModel = CartViewModel(posModel: posModel)
-    let itemsListViewModel = ItemListViewModel(posModel: posModel)
-    let dashboardViewModel = PointOfSaleDashboardViewModel(posModel: posModel,
-                                                           totalsViewModel: totalsViewModel,
-                                                           cartViewModel: cartViewModel,
-                                                           itemListViewModel: itemsListViewModel,
-                                                           connectivityObserver: POSConnectivityObserverPreview())
-    CartView(viewModel: dashboardViewModel, cartViewModel: cartViewModel)
+
+    CartView(cartViewModel: cartViewModel)
 }
 #endif

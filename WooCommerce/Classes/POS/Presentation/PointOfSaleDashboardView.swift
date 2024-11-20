@@ -190,7 +190,7 @@ private extension PointOfSaleDashboardView {
 /// Helpers to generate all Dashboard subviews
 private extension PointOfSaleDashboardView {
     var cartView: some View {
-        CartView(viewModel: viewModel, cartViewModel: cartViewModel)
+        CartView(cartViewModel: cartViewModel)
     }
 
     var totalsView: some View {
