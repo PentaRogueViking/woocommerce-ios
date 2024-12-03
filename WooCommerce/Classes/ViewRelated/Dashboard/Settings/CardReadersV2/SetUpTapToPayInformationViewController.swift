@@ -21,6 +21,7 @@ final class SetUpTapToPayInformationViewController: UIHostingController<SetUpTap
         return BuiltInCardReaderConnectionController(
             forSiteID: viewModel.siteID,
             alertsPresenter: alertsPresenter,
+            merchantEducationPresenter: .init(rootViewController: self),
             alertsProvider: BuiltInReaderConnectionAlertsProvider(),
             configuration: viewModel.configuration,
             analyticsTracker: viewModel.connectionAnalyticsTracker)

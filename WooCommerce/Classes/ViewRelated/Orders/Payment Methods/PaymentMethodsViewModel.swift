@@ -232,6 +232,7 @@ final class PaymentMethodsViewModel: ObservableObject {
         let tapToPayConnectionController = BuiltInCardReaderConnectionController(
             forSiteID: siteID,
             alertsPresenter: alertsPresenter,
+            merchantEducationPresenter: .init(rootViewController: rootViewController),
             alertsProvider: tapToPayAlertsProvider,
             configuration: cardPresentPaymentsConfiguration,
             analyticsTracker: analyticsTracker)
