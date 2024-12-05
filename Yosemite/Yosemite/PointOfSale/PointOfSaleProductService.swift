@@ -92,3 +92,40 @@ private extension PointOfSaleProductService {
         !product.price.isEmpty
     }
 }
+
+
+
+protocol POSChildFetchStrategy {
+    associatedtype ParentItem: POSParentItem
+    func fetchChildren(for item: ParentItem, page: Int) async throws -> [POSDisplayableItem]
+}
+
+import Networking
+class ProductVariationFetchStrategy: POSChildFetchStrategy {
+    let remote: ProductVariationsRemoteProtocol
+    let siteID: Int64
+
+    init (remote: ProductVariationsRemoteProtocol, siteID: Int64) {
+        self.remote = remote
+        self.siteID = siteID
+    }
+
+    convenience init(network: Network, siteID: Int64) {
+        self.init(remote: ProductVariationsRemote(network: network), siteID: siteID)
+    }
+
+    func fetchChildren(for item: POSVariableProductParent, page: Int) async throws -> [POSDisplayableItem] {
+        let variations = try await remote.loadAllProductVariations(for: siteID,
+                                                                   productID: item.productID,
+                                                                   variationIDs: [],
+                                                                   context: nil,
+                                                                   pageNumber: page,
+                                                                   pageSize: 25)
+        return variations.map { variation in
+            return POSVariableProduct(id: UUID(),
+                                      name: variation.description ?? "Variation \(variation.productVariationID)",
+                                      formattedPrice: variation.price,
+                                      productImageSource: variation.image?.src)
+        }
+    }
+}

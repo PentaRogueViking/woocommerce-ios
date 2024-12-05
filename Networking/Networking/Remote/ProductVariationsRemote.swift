@@ -12,6 +12,14 @@ public protocol ProductVariationsRemoteProtocol {
                                   pageNumber: Int,
                                   pageSize: Int,
                                   completion: @escaping ([ProductVariation]?, Error?) -> Void)
+
+    func loadAllProductVariations(for siteID: Int64,
+                                  productID: Int64,
+                                  variationIDs: [Int64],
+                                  context: String?,
+                                  pageNumber: Int,
+                                  pageSize: Int) async throws -> [ProductVariation]
+
     func loadProductVariation(for siteID: Int64, productID: Int64, variationID: Int64, completion: @escaping (Result<ProductVariation, Error>) -> Void)
     func createProductVariation(for siteID: Int64,
                                 productID: Int64,
@@ -57,6 +65,50 @@ public class ProductVariationsRemote: Remote, ProductVariationsRemoteProtocol {
                                          pageNumber: Int = Default.pageNumber,
                                          pageSize: Int = Default.pageSize,
                                          completion: @escaping ([ProductVariation]?, Error?) -> Void) {
+        let request = loadAllProductVariationsRequest(for: siteID,
+                                                      productID: productID,
+                                                      variationIDs: variationIDs,
+                                                      context: context,
+                                                      pageNumber: pageNumber,
+                                                      pageSize: pageSize)
+        let mapper = ProductVariationListMapper(siteID: siteID, productID: productID)
+        enqueue(request, mapper: mapper, completion: completion)
+    }
+
+    /// Retrieves all of the `ProductVariation`s available.
+    ///
+    /// - Parameters:
+    ///     - siteID: Site for which we'll fetch remote product variations.
+    ///     - productID: Product for which we'll fetch remote product variations.
+    ///     - variationIDs: A list of variation IDs to fetch from the product. If the value is empty, all variations are returned.
+    ///     - context: view or edit. Scope under which the request is made;
+    ///                determines fields present in response. Default is view.
+    ///     - pageNumber: Number of page that should be retrieved.
+    ///     - pageSize: Number of product variations to be retrieved per page.
+    ///     - completion: Closure to be executed upon completion.
+    ///
+    public func loadAllProductVariations(for siteID: Int64,
+                                         productID: Int64,
+                                         variationIDs: [Int64],
+                                         context: String? = nil,
+                                         pageNumber: Int = Default.pageNumber,
+                                         pageSize: Int = Default.pageSize) async throws -> [ProductVariation] {
+        let request = loadAllProductVariationsRequest(for: siteID,
+                                                      productID: productID,
+                                                      variationIDs: variationIDs,
+                                                      context: context,
+                                                      pageNumber: pageNumber,
+                                                      pageSize: pageSize)
+        let mapper = ProductVariationListMapper(siteID: siteID, productID: productID)
+        return try await enqueue(request, mapper: mapper)
+    }
+
+    private func loadAllProductVariationsRequest(for siteID: Int64,
+                                                 productID: Int64,
+                                                 variationIDs: [Int64],
+                                                 context: String? = nil,
+                                                 pageNumber: Int = Default.pageNumber,
+                                                 pageSize: Int = Default.pageSize) -> JetpackRequest {
         let stringOfVariationIDs = variationIDs.map { String($0) }
             .joined(separator: ",")
         let parameters = [
@@ -68,14 +120,12 @@ public class ProductVariationsRemote: Remote, ProductVariationsRemoteProtocol {
             .compactMapValues { $0 }
 
         let path = "\(Path.products)/\(productID)/variations"
-        let request = JetpackRequest(wooApiVersion: .mark3,
-                                     method: .get,
-                                     siteID: siteID,
-                                     path: path,
-                                     parameters: parameters,
-                                     availableAsRESTRequest: true)
-        let mapper = ProductVariationListMapper(siteID: siteID, productID: productID)
-        enqueue(request, mapper: mapper, completion: completion)
+        return JetpackRequest(wooApiVersion: .mark3,
+                              method: .get,
+                              siteID: siteID,
+                              path: path,
+                              parameters: parameters,
+                              availableAsRESTRequest: true)
     }
 
     /// Retrieves a specific `ProductVariation`.

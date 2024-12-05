@@ -3,12 +3,20 @@ import Combine
 import protocol Yosemite.POSDisplayableItem
 import protocol Yosemite.PointOfSaleItemServiceProtocol
 import enum Yosemite.PointOfSaleProductServiceError
+import enum Yosemite.ItemListState
+import protocol Yosemite.POSParentItem
+import struct Yosemite.POSVariableProductParent
+import protocol Yosemite.POSChildFetchStrategy
 
 protocol PointOfSaleItemsControllerProtocol {
     var itemListStatePublisher: any Publisher<ItemListState, Never> { get }
     func loadInitialItems() async
     func loadNextItems() async
     func reload() async
+
+    func sublistPublisher(for item: POSParentItem) -> AnyPublisher<ItemListState, Never>
+    func loadSublist(for item: POSParentItem) async
+    func loadMoreChildren(for item: POSParentItem) async
 }
 
 class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
@@ -19,9 +27,13 @@ class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
     private var mightHaveMorePages: Bool = true
     private let itemProvider: PointOfSaleItemServiceProtocol
 
+    private var sublistSubjects: [String: PassthroughSubject<ItemListState, Never>] = [:]
+    private var fetchStrategies: [Type: FetchStrategy]
+
     init(itemProvider: PointOfSaleItemServiceProtocol) {
         self.itemProvider = itemProvider
         itemListStatePublisher = itemListStateSubject.eraseToAnyPublisher()
+        configureFetchStrategies()
     }
 
     @MainActor
@@ -91,5 +103,63 @@ class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
 
     private enum Constants {
         static let initialPage: Int = 1
+    }
+}
+
+extension PointOfSaleItemsController {
+    private func configureFetchStrategies() {
+        fetchStrategies = [
+            POSVariableProductParent.Self: ProductVariationFetchStrategy()
+        ]
+    }
+
+    func sublistPublisher(for item: POSParentItem) -> AnyPublisher<ItemListState, Never> {
+        if let existingSubject = sublistSubjects[item.identifier] {
+            return existingSubject.eraseToAnyPublisher()
+        }
+
+        let subject = PassthroughSubject<ItemListState, Never>()
+        sublistSubjects[item.identifier] = subject
+        return subject.eraseToAnyPublisher()
+    }
+
+    @MainActor
+    func loadSublist(for item: POSParentItem) async {
+        guard let subject = sublistSubjects[item.identifier] else { return }
+
+        subject.send(.initialLoading)
+        do {
+            let children = try await fetchSublist(for: item, pageNumber: 1)
+            item.currentPage = 1
+            item.hasMoreChildren = !children.isEmpty
+            subject.send(.loaded(children))
+        } catch {
+            subject.send(.error(PointOfSaleErrorState.errorOnLoadingProducts()))
+        }
+    }
+
+    @MainActor
+    func loadMoreChildren(for item: POSParentItem) async {
+        guard item.hasMoreChildren,
+              let subject = sublistSubjects[item.identifier] else { return }
+
+        subject.send(.loading([])) // Could include current children here
+        do {
+            let nextPage = item.currentPage + 1
+            let newChildren = try await fetchSublist(for: item, pageNumber: nextPage)
+            item.currentPage = nextPage
+            item.hasMoreChildren = !newChildren.isEmpty
+            subject.send(.loaded(newChildren))
+        } catch {
+            subject.send(.error(PointOfSaleErrorState.errorOnLoadingProducts()))
+        }
+    }
+
+    @MainActor
+    private func fetchSublist(for item: POSParentItem, pageNumber: Int) async throws -> [POSDisplayableItem] {
+        guard let strategy = fetchStrategies[item.type] else {
+            throw PointOfSaleErrorState.unknownItemType(item.type)
+        }
+        return try await strategy.fetchChildren(for: item, page: pageNumber)
     }
 }

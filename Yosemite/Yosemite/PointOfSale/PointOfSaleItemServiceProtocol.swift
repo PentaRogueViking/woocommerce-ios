@@ -52,3 +52,47 @@ extension PointOfSaleItemServiceProtocol {
         try await providePointOfSaleItems(pageNumber: pageNumber)
     }
 }
+
+public protocol POSParentItem: POSDisplayableItem & PointOfSaleParentItemProtocol {}
+
+public protocol PointOfSaleParentItemProtocol {
+    var childrenState: ItemListState { get set }
+    var currentPage: Int { get set }
+    var hasMoreChildren: Bool { get set }
+}
+
+public enum ItemListState: Equatable {
+    case empty
+    case initialLoading
+    case loading(_ currentItems: [POSDisplayableItem])
+    case loaded(_ items: [POSDisplayableItem])
+    case error(PointOfSaleErrorState)
+
+
+    public static func == (lhs: ItemListState, rhs: ItemListState) -> Bool {
+        switch (lhs, rhs) {
+        case (.empty, .empty),
+            (.initialLoading, .initialLoading):
+            return true
+        case (.loading(let lhsItems), .loading(let rhsItems)),
+            (.loaded(let lhsItems), .loaded(let rhsItems)):
+            return lhsItems.isEqual(to: rhsItems)
+        case (.error(let lhsError), .error(let rhsError)):
+            return lhsError == rhsError
+        default:
+            return false
+        }
+    }
+}
+
+public struct PointOfSaleErrorState: Equatable {
+    public let title: String
+    public let subtitle: String
+    public let buttonText: String
+
+    public init(title: String, subtitle: String, buttonText: String) {
+        self.title = title
+        self.subtitle = subtitle
+        self.buttonText = buttonText
+    }
+}

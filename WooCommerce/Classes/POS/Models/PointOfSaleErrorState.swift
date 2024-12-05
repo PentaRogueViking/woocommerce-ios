@@ -1,10 +1,7 @@
 import Foundation
+import struct Yosemite.PointOfSaleErrorState
 
-struct PointOfSaleErrorState: Equatable {
-    let title: String
-    let subtitle: String
-    let buttonText: String
-
+extension PointOfSaleErrorState {
     static func errorOnLoadingProducts() -> Self {
         PointOfSaleErrorState(title: Constants.failedToLoadTitle,
                               subtitle: Constants.failedToLoadSubtitle,

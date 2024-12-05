@@ -27,3 +27,43 @@ extension POSProduct: Hashable {
         return productID == orderItem.productID
     }
 }
+
+struct POSVariableProductParent: POSDisplayableItem, POSParentItem, Equatable {
+    static func == (lhs: POSVariableProductParent, rhs: POSVariableProductParent) -> Bool {
+        return lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.formattedPrice == rhs.formattedPrice &&
+        lhs.productImageSource == rhs.productImageSource
+    }
+    
+    // POSDisplayableItem
+    let id: UUID
+    let name: String
+    let formattedPrice: String
+    let productImageSource: String?
+
+    // POSParentItem
+    var childrenState: ItemListState
+    var currentPage: Int
+    var hasMoreChildren: Bool
+
+    // VariableProduct fetch requirements
+    let productID: Int64
+}
+
+struct POSVariableProduct: POSOrderableItem, Equatable {
+    // POSDisplayableItem
+    var id: UUID
+    var name: String
+    var formattedPrice: String
+    var productImageSource: String?
+
+    // POSOrderableItem
+    func toOrderSyncProductInput(quantity: Decimal) -> OrderSyncProductInput {
+        <#code#>
+    }
+
+    func matches(orderItem: OrderItem) -> Bool {
+        <#code#>
+    }
+}
