@@ -28,8 +28,8 @@ extension POSProduct: Hashable {
     }
 }
 
-struct POSVariableProductParent: POSDisplayableItem, POSParentItem, Equatable {
-    static func == (lhs: POSVariableProductParent, rhs: POSVariableProductParent) -> Bool {
+public struct POSVariableProductParent: POSDisplayableItem, POSParentItem, Equatable {
+    public static func == (lhs: POSVariableProductParent, rhs: POSVariableProductParent) -> Bool {
         return lhs.id == rhs.id &&
         lhs.name == rhs.name &&
         lhs.formattedPrice == rhs.formattedPrice &&
@@ -37,15 +37,15 @@ struct POSVariableProductParent: POSDisplayableItem, POSParentItem, Equatable {
     }
     
     // POSDisplayableItem
-    let id: UUID
-    let name: String
-    let formattedPrice: String
-    let productImageSource: String?
+    public let id: UUID
+    public let name: String
+    public let formattedPrice: String
+    public let productImageSource: String?
 
     // POSParentItem
-    var childrenState: ItemListState
-    var currentPage: Int
-    var hasMoreChildren: Bool
+    public var childrenState: ItemListState
+    public var currentPage: Int
+    public var hasMoreChildren: Bool
 
     // VariableProduct fetch requirements
     let productID: Int64

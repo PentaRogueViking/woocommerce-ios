@@ -5,8 +5,10 @@ import protocol Yosemite.PointOfSaleItemServiceProtocol
 import enum Yosemite.PointOfSaleProductServiceError
 import enum Yosemite.ItemListState
 import protocol Yosemite.POSParentItem
-import struct Yosemite.POSVariableProductParent
 import protocol Yosemite.POSChildFetchStrategy
+import struct Yosemite.PointOfSaleErrorState
+import struct Yosemite.POSVariableProductParent
+import struct Yosemite.ProductVariationFetchStrategy
 
 protocol PointOfSaleItemsControllerProtocol {
     var itemListStatePublisher: any Publisher<ItemListState, Never> { get }
@@ -19,6 +21,8 @@ protocol PointOfSaleItemsControllerProtocol {
     func loadMoreChildren(for item: POSParentItem) async
 }
 
+import protocol Yosemite.POSChildFetchStrategy
+
 class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
     private(set) var itemListStatePublisher: any Publisher<ItemListState, Never>
     private var itemListStateSubject: PassthroughSubject<ItemListState, Never> = .init()
@@ -27,8 +31,8 @@ class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
     private var mightHaveMorePages: Bool = true
     private let itemProvider: PointOfSaleItemServiceProtocol
 
-    private var sublistSubjects: [String: PassthroughSubject<ItemListState, Never>] = [:]
-    private var fetchStrategies: [Type: FetchStrategy]
+    private var sublistSubjects: [UUID: PassthroughSubject<ItemListState, Never>] = [:]
+    private var fetchStrategies: [TypeIdentifier: any POSChildFetchStrategy]
 
     init(itemProvider: PointOfSaleItemServiceProtocol) {
         self.itemProvider = itemProvider
@@ -106,26 +110,30 @@ class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
     }
 }
 
+import Networking
+
 extension PointOfSaleItemsController {
     private func configureFetchStrategies() {
         fetchStrategies = [
-            POSVariableProductParent.Self: ProductVariationFetchStrategy()
+            TypeIdentifier(POSVariableProductParent.self): ProductVariationFetchStrategy(
+                network: AlamofireNetwork(credentials: ServiceLocator.stores.sessionManager.defaultCredentials),
+                siteID: ServiceLocator.stores.sessionManager.defaultSite?.siteID ?? 0)
         ]
     }
 
     func sublistPublisher(for item: POSParentItem) -> AnyPublisher<ItemListState, Never> {
-        if let existingSubject = sublistSubjects[item.identifier] {
+        if let existingSubject = sublistSubjects[item.id] {
             return existingSubject.eraseToAnyPublisher()
         }
 
         let subject = PassthroughSubject<ItemListState, Never>()
-        sublistSubjects[item.identifier] = subject
+        sublistSubjects[item.id] = subject
         return subject.eraseToAnyPublisher()
     }
 
     @MainActor
     func loadSublist(for item: POSParentItem) async {
-        guard let subject = sublistSubjects[item.identifier] else { return }
+        guard let subject = sublistSubjects[item.id] else { return }
 
         subject.send(.initialLoading)
         do {
@@ -141,7 +149,7 @@ extension PointOfSaleItemsController {
     @MainActor
     func loadMoreChildren(for item: POSParentItem) async {
         guard item.hasMoreChildren,
-              let subject = sublistSubjects[item.identifier] else { return }
+              let subject = sublistSubjects[item.id] else { return }
 
         subject.send(.loading([])) // Could include current children here
         do {
@@ -157,9 +165,48 @@ extension PointOfSaleItemsController {
 
     @MainActor
     private func fetchSublist(for item: POSParentItem, pageNumber: Int) async throws -> [POSDisplayableItem] {
-        guard let strategy = fetchStrategies[item.type] else {
+        guard let strategy = fetchStrategies[TypeIdentifier(item)] else {
             throw PointOfSaleErrorState.unknownItemType(item.type)
         }
         return try await strategy.fetchChildren(for: item, page: pageNumber)
+    }
+}
+
+struct TypeIdentifier: Hashable {
+    private let type: Any.Type
+
+    init(_ type: Any.Type) {
+        self.type = type
+    }
+
+    init(_ item: any POSParentItem) {
+        self.init(Swift.type(of: item))
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(type))
+    }
+
+    static func == (lhs: TypeIdentifier, rhs: TypeIdentifier) -> Bool {
+        return lhs.type == rhs.type
+    }
+}
+
+public struct AnyPOSChildFetchStrategy: POSChildFetchStrategy {
+    public typealias ParentItem = POSParentItem
+
+    private let _fetchChildren: (POSParentItem, Int) async throws -> [POSDisplayableItem]
+
+    public init<S: POSChildFetchStrategy>(_ strategy: S) where S.ParentItem: POSParentItem {
+        self._fetchChildren = { item, page in
+            guard let typedItem = item as? S.ParentItem else {
+                fatalError("Type mismatch: expected \(S.ParentItem.self), got \(type(of: item))")
+            }
+            return try await strategy.fetchChildren(for: typedItem, page: page)
+        }
+    }
+
+    public func fetchChildren(for item: POSParentItem, page: Int) async throws -> [POSDisplayableItem] {
+        return try await _fetchChildren(item, page)
     }
 }

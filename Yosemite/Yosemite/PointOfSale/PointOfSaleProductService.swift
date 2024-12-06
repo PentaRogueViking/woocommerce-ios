@@ -95,13 +95,13 @@ private extension PointOfSaleProductService {
 
 
 
-protocol POSChildFetchStrategy {
+public protocol POSChildFetchStrategy {
     associatedtype ParentItem: POSParentItem
     func fetchChildren(for item: ParentItem, page: Int) async throws -> [POSDisplayableItem]
 }
 
 import Networking
-class ProductVariationFetchStrategy: POSChildFetchStrategy {
+public struct ProductVariationFetchStrategy: POSChildFetchStrategy {
     let remote: ProductVariationsRemoteProtocol
     let siteID: Int64
 
@@ -110,11 +110,11 @@ class ProductVariationFetchStrategy: POSChildFetchStrategy {
         self.siteID = siteID
     }
 
-    convenience init(network: Network, siteID: Int64) {
+    public init(network: Network, siteID: Int64) {
         self.init(remote: ProductVariationsRemote(network: network), siteID: siteID)
     }
 
-    func fetchChildren(for item: POSVariableProductParent, page: Int) async throws -> [POSDisplayableItem] {
+    public func fetchChildren(for item: POSVariableProductParent, page: Int) async throws -> [POSDisplayableItem] {
         let variations = try await remote.loadAllProductVariations(for: siteID,
                                                                    productID: item.productID,
                                                                    variationIDs: [],
