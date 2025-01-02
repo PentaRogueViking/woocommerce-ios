@@ -29,8 +29,14 @@ def aztec
   # pod 'WordPress-Aztec-iOS', git: 'https://github.com/wordpress-mobile/AztecEditor-iOS.git', commit: ''
 end
 
-def wordpress_kit
-  pod 'WordPressKit', '~> 17.3'
+def wpxmlrpc
+  pod 'wpxmlrpc', '~> 0.10'
+end
+
+def wordpress_kit_pods
+  pod 'NSObject-SafeExpectations', '~> 0.0.4'
+  wpxmlrpc
+  pod 'UIDeviceIdentifier', '~> 2.0'
 end
 
 def tracks
@@ -112,7 +118,7 @@ target 'WooCommerce' do
   wordpress_ui
   # TODO: remove once WordPressAuthenticator fold completed
   svprogresshud
-  wordpress_kit
+  wordpress_kit_pods
 
   aztec
 
@@ -340,10 +346,10 @@ end
 # ==========
 #
 def wordpress_authenticator_pods
+  wpxmlrpc
   svprogresshud
   gridicons
   wordpress_ui
-  wordpress_kit
   wordpress_shared
 end
 
@@ -352,13 +358,34 @@ target 'WordPressAuthenticator' do
   wordpress_authenticator_pods
 end
 
+def ocmock
+  pod 'OCMock', '~> 3.4'
+end
+
 target 'WordPressAuthenticatorTests' do
   project 'WooCommerce/WooCommerce.xcodeproj'
   wordpress_authenticator_pods
 
-  pod 'OCMock', '~> 3.4'
+  ocmock
   pod 'Expecta', '1.0.6'
   pod 'Specta', '1.0.7'
+end
+
+target 'WordPressKit' do
+  project 'WooCommerce/WooCommerce.xcodeproj'
+  wordpress_kit_pods
+  wordpress_shared
+end
+
+target 'WordPressKitTests' do
+  project 'WooCommerce/WooCommerce.xcodeproj'
+  wordpress_kit_pods
+  wordpress_shared
+
+  alamofire
+  ocmock
+  pod 'OHHTTPStubs', '~> 9.0'
+  pod 'OHHTTPStubs/Swift', '~> 9.0'
 end
 
 # Tools

@@ -138,32 +138,35 @@
 
 - (void)loginToSelfHosted:(LoginFields *)loginFields
 {
-    NSURL *xmlRPCURL = loginFields.xmlrpcURL;
-    [self.wordpressXMLRPCAPIFacade getBlogOptionsWithEndpoint:xmlRPCURL username:loginFields.username password:loginFields.password success:^(id options) {
-        if ([options objectForKey:@"wordpress.com"] != nil) {
-            [self signInToWordpressDotCom:loginFields];
-        } else {
-            NSString *versionString = options[@"software_version"][@"value"];
-            NSString *minimumSupported = [WordPressOrgXMLRPCApi minimumSupportedVersion];
-            CGFloat version = [versionString floatValue];
-
-            if (version > 0 && version < [minimumSupported floatValue]) {
-                NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"WordPress version too old. The site at %@ uses WordPress %@. We recommend to update to the latest version, or at least %@", nil), [xmlRPCURL host], versionString, minimumSupported];
-                NSError *versionError = [NSError errorWithDomain:WordPressAuthenticator.errorDomain
-                                                            code:WordPressAuthenticator.invalidVersionErrorCode
-                                                        userInfo:@{NSLocalizedDescriptionKey:errorMessage}];
-                [self track:WPAnalyticsStatLoginFailed error:versionError];
-                [self.delegate displayRemoteError:versionError];
-                return;
-            }
-            NSString *xmlrpc = [xmlRPCURL absoluteString];
-            [self.delegate finishedLoginWithUsername:loginFields.username password:loginFields.password xmlrpc:xmlrpc options:options];
-            [self trackSuccess];
-        }
-    } failure:^(NSError *error) {
-        [self track:WPAnalyticsStatLoginFailed error:error];
-        [self.delegate displayRemoteError:error];
-    }];
+//    NSURL *xmlRPCURL = loginFields.xmlrpcURL;
+//    [self.wordpressXMLRPCAPIFacade getBlogOptionsWithEndpoint:xmlRPCURL username:loginFields.username password:loginFields.password success:^(id options) {
+//        if ([options objectForKey:@"wordpress.com"] != nil) {
+//            [self signInToWordpressDotCom:loginFields];
+//        } else {
+//            NSString *versionString = options[@"software_version"][@"value"];
+//            NSString *minimumSupported = [WordPressOrgXMLRPCApi minimumSupportedVersion];
+//            CGFloat version = [versionString floatValue];
+//
+//            if (version > 0 && version < [minimumSupported floatValue]) {
+//                NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"WordPress version too old. The site at %@ uses WordPress %@. We recommend to update to the latest version, or at least %@", nil), [xmlRPCURL host], versionString, minimumSupported];
+//                NSError *versionError = [NSError errorWithDomain:WordPressAuthenticator.errorDomain
+//                                                            code:WordPressAuthenticator.invalidVersionErrorCode
+//                                                        userInfo:@{NSLocalizedDescriptionKey:errorMessage}];
+//                [self track:WPAnalyticsStatLoginFailed error:versionError];
+//                [self.delegate displayRemoteError:versionError];
+//                return;
+//            }
+//            NSString *xmlrpc = [xmlRPCURL absoluteString];
+//            [self.delegate finishedLoginWithUsername:loginFields.username password:loginFields.password xmlrpc:xmlrpc options:options];
+//            [self trackSuccess];
+//        }
+//    } failure:^(NSError *error) {
+//        [self track:WPAnalyticsStatLoginFailed error:error];
+//        [self.delegate displayRemoteError:error];
+//    }];
+    NSError *error = [[NSError alloc] initWithDomain:@"com.woocommerce.wpkit" code:1 userInfo:nil];
+    [self track:WPAnalyticsStatLoginFailed error:error];
+    [self.delegate displayRemoteError:error];
 }
 
 - (void)track:(WPAnalyticsStat)stat
