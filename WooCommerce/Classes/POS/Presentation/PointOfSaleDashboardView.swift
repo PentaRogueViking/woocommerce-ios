@@ -12,6 +12,8 @@ struct PointOfSaleDashboardView: View {
     var body: some View {
         @Bindable var posModel = posModel
         print("Dashboard recalculated")
+
+        Self._printChanges()
         return ZStack(alignment: .bottomLeading) {
             switch posModel.itemsViewState.containerState {
             case .loading:
@@ -74,9 +76,9 @@ struct PointOfSaleDashboardView: View {
         .task {
             await posModel.loadItems(base: .root)
         }
-//        .onChange(of: posModel.itemsViewState) { newValue in
-//            print("State changed to \(newValue)")
-//        }
+        .onChange(of: posModel.itemsViewState) { newValue in
+            print("State changed to \(newValue)")
+        }
     }
 
     private var contentView: some View {

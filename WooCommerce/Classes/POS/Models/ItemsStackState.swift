@@ -12,6 +12,13 @@ final class ItemsStackState {
         self.root = root
         self.itemStates = itemStates
     }
+
+    var description: String {
+        let itemStatesDescription = itemStates.map { (key, value) in
+            return "\(key.typeName): \(value.description)"
+        }
+        return "ItemsStackState(\(root.description), \(itemStatesDescription.joined(separator: ", ")))"
+    }
 }
 
 @available(iOS 17.0, *)

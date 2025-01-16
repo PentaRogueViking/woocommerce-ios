@@ -15,6 +15,17 @@ public enum POSItem: Equatable, Identifiable, Hashable {
             return variation.id
         }
     }
+
+    public var typeName: String {
+        switch self {
+        case .simpleProduct:
+            return "POSSimpleProduct"
+        case .variableParentProduct:
+            return "POSVariableParentProduct"
+        case .variation:
+            return "POSVariation"
+        }
+    }
 }
 
 /// POSOrderableItem extends a displayable item with the functions required for using it in an order.

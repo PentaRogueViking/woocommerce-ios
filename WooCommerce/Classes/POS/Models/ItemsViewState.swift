@@ -11,6 +11,10 @@ final class ItemsViewState {
         self.containerState = containerState
         self.itemsStack = itemsStack
     }
+
+    var description: String {
+        return "ItemsViewState - container: \(containerState.name), itemsStack: \(itemsStack.description)"
+    }
 }
 
 @available(iOS 17.0, *)

@@ -65,7 +65,7 @@ private extension ChildItemList {
         VStack {
             headerView
 
-            ItemList(state: state,
+            ItemList(//state: state,
                      node: .parent(parentItem))
                 .transition(.opacity)
         }

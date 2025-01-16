@@ -7,30 +7,36 @@ struct ItemListView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @Environment(PointOfSaleAggregateModel.self) var posModel: PointOfSaleAggregateModel
+//    var loadItems: (ItemListBaseItem) async -> Void
 
     @State private var showSimpleProductsModal: Bool = false
-    private var itemListState: ItemListState {
-        posModel.itemsViewState.itemsStack.root
-    }
+
+//    var itemListState: ItemListState
 
     @AppStorage(BannerState.isSimpleProductsOnlyBannerDismissedKey)
     private var isHeaderBannerDismissed: Bool = false
 
     var body: some View {
         print("View with refreshable recomputed")
+        Self._printChanges()
         return NavigationStack {
             VStack {
                 headerView
-                switch itemListState {
-                case .loading(let items),
-                        .loaded(let items, _),
-                        .inlineError(let items, _):
-                    listView(items)
-                case .error:
-                    // Currently unused, but this will show errors that are displayed inline with previously
-                    // loaded items, e.g. when loading a new page or refreshing.
-                    EmptyView()
+                ItemList() {
+                    if dynamicTypeSize.isAccessibilitySize, shouldShowHeaderBanner {
+                        bannerCardView
+                    }
                 }
+//                switch itemListState {
+//                case .loading(let items),
+//                        .loaded(let items, _),
+//                        .inlineError(let items, _):
+//                    listView(items)
+//                case .error:
+//                    // Currently unused, but this will show errors that are displayed inline with previously
+//                    // loaded items, e.g. when loading a new page or refreshing.
+//                    EmptyView()
+//                }
             }
             .navigationDestination(for: POSItem.self, destination: { item in
                 childListView(parentItem: item)
@@ -38,6 +44,7 @@ struct ItemListView: View {
         }
         .refreshable {
             print("Pull to refresh")
+//            await loadItems(.root)
             await posModel.loadItems(base: .root)
         }
         .background(Color.posPrimaryBackground)
@@ -137,7 +144,7 @@ private extension ItemListView {
 
     @ViewBuilder
     func listView(_ items: [POSItem]) -> some View {
-        ItemList(state: itemListState) {
+        ItemList() {
             if dynamicTypeSize.isAccessibilitySize, shouldShowHeaderBanner {
                 bannerCardView
             }
@@ -158,7 +165,8 @@ private extension ItemListView {
 @available(iOS 17.0, *)
 private extension ItemListView {
     var shouldShowHeaderBanner: Bool {
-        itemListState.eligibleToShowSimpleProductsBanner && !isHeaderBannerDismissed
+//        itemListState.eligibleToShowSimpleProductsBanner && !isHeaderBannerDismissed
+        return false
     }
 }
 
@@ -275,30 +283,30 @@ private extension ItemListView {
         )
     }
 }
-
-#if DEBUG
-@available(iOS 17.0, *)
-#Preview("Loaded with all product types") {
-    let itemsController = PointOfSalePreviewItemsController()
-    Task { @MainActor in
-        await itemsController.loadItems(base: .root)
-    }
-    let posModel = PointOfSaleAggregateModel(
-        itemsController: itemsController,
-        cardPresentPaymentService: CardPresentPaymentPreviewService(),
-        orderController: PointOfSalePreviewOrderController())
-    return ItemListView()
-        .environment(posModel)
-}
-
-@available(iOS 17.0, *)
-#Preview("Loading") {
-    let posModel = PointOfSaleAggregateModel(
-        itemsController: PointOfSalePreviewItemsController(),
-        cardPresentPaymentService: CardPresentPaymentPreviewService(),
-        orderController: PointOfSalePreviewOrderController())
-    return ItemListView()
-        .environment(posModel)
-}
-
-#endif
+//
+//#if DEBUG
+//@available(iOS 17.0, *)
+//#Preview("Loaded with all product types") {
+//    let itemsController = PointOfSalePreviewItemsController()
+//    Task { @MainActor in
+//        await itemsController.loadItems(base: .root)
+//    }
+//    let posModel = PointOfSaleAggregateModel(
+//        itemsController: itemsController,
+//        cardPresentPaymentService: CardPresentPaymentPreviewService(),
+//        orderController: PointOfSalePreviewOrderController())
+//    return ItemListView()
+//        .environment(posModel)
+//}
+//
+//@available(iOS 17.0, *)
+//#Preview("Loading") {
+//    let posModel = PointOfSaleAggregateModel(
+//        itemsController: PointOfSalePreviewItemsController(),
+//        cardPresentPaymentService: CardPresentPaymentPreviewService(),
+//        orderController: PointOfSalePreviewOrderController())
+//    return ItemListView()
+//        .environment(posModel)
+//}
+//
+//#endif

@@ -15,6 +15,19 @@ enum ItemListState {
             return false
         }
     }
+
+    var description: String {
+        switch self {
+        case .loading(let items):
+            return "Loading \(items.count) items..."
+        case .loaded(let items, let hasMore):
+            return "Loaded \(items.count) items\(hasMore ? ", more available" : "")"
+        case .inlineError(let items, let error):
+            return "Error loading \(items.count) existing items: \(error)"
+        case .error(let error):
+            return "Error: \(error)"
+        }
+    }
 }
 
 extension ItemListState {

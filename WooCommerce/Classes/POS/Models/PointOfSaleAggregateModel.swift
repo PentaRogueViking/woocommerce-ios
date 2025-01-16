@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import Observation
 
 import protocol Yosemite.POSOrderableItem
 import protocol WooFoundation.Analytics

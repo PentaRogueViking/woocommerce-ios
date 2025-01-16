@@ -11,7 +11,9 @@ struct PointOfSaleItemListFullscreenErrorView: View {
     }
 
     var body: some View {
-        PointOfSaleItemListFullscreenView {
+        print("Error shown")
+
+        return PointOfSaleItemListFullscreenView {
             PointOfSaleItemListErrorView(error: error, onRetry: onRetry)
         }
     }

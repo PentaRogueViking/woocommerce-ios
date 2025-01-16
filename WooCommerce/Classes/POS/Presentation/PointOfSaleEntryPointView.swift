@@ -22,14 +22,19 @@ struct PointOfSaleEntryPointView: View {
     }
 
     var body: some View {
-        PointOfSaleDashboardView()
-        .environmentObject(posModalManager)
-        .environment(posModel)
-        .onAppear {
-            onPointOfSaleModeActiveStateChange(true)
-        }
-        .onDisappear {
-            onPointOfSaleModeActiveStateChange(false)
+//        print("Entry point recomputed: \(posModel.itemsViewState.description)")
+        Self._printChanges()
+
+        return VStack {
+            PointOfSaleDashboardView()
+            .environmentObject(posModalManager)
+            .environment(posModel)
+            .onAppear {
+                onPointOfSaleModeActiveStateChange(true)
+            }
+            .onDisappear {
+                onPointOfSaleModeActiveStateChange(false)
+            }
         }
     }
 }

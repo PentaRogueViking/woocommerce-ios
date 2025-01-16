@@ -10,14 +10,19 @@ struct ItemList<HeaderView: View>: View {
     @Environment(PointOfSaleAggregateModel.self) var posModel: PointOfSaleAggregateModel
     @StateObject private var infiniteScrollTriggerDeterminer = ThresholdInfiniteScrollTriggerDeterminer()
 
-    let state: ItemListState
+    private var state: ItemListState {
+        switch node {
+        case .root:
+            posModel.itemsViewState.itemsStack.root
+        case .parent(let item):
+            posModel.itemsViewState.itemsStack.itemStates[item] ?? .loaded([], hasMoreItems: false)
+        }
+    }
     private let node: ItemListBaseItem
     private let headerView: HeaderView
 
-    init(state: ItemListState,
-         node: ItemListBaseItem = .root,
+    init(node: ItemListBaseItem = .root,
          @ViewBuilder headerView: () -> HeaderView = { EmptyView() }) {
-        self.state = state
         self.node = node
         self.headerView = headerView()
     }
@@ -118,44 +123,44 @@ private extension ItemListRow {
     }
 }
 
-#if DEBUG
-@available(iOS 17.0, *)
-#Preview("Loaded with items") {
-    ItemList(
-        state:
-                .loaded(
-                    [
-                        .simpleProduct(
-                            .init(
-                                id: .init(),
-                                name: "Strong latte 16oz",
-                                formattedPrice: "$4.00",
-                                productID: 12,
-                                price: "4.00"
-                            )
-                        ),
-                        .variableParentProduct(
-                            .init(
-                                id: .init(),
-                                name: "Variable mocha",
-                                productImageSource: "https://pd.w.org/2024/12/986762d0d4d4cf17.82435881-scaled.jpeg",
-                                productID: 16
-                            )
-                        )
-                    ],
-                    hasMoreItems: false
-                )
-    )
-}
-
-@available(iOS 17.0, *)
-#Preview("Loading") {
-    let posModel = PointOfSaleAggregateModel(
-        itemsController: PointOfSalePreviewItemsController(),
-        cardPresentPaymentService: CardPresentPaymentPreviewService(),
-        orderController: PointOfSalePreviewOrderController())
-    ItemList(state: .loading([]))
-        .environment(posModel)
-}
-
-#endif
+//#if DEBUG
+//@available(iOS 17.0, *)
+//#Preview("Loaded with items") {
+//    ItemList(
+//        state:
+//                .loaded(
+//                    [
+//                        .simpleProduct(
+//                            .init(
+//                                id: .init(),
+//                                name: "Strong latte 16oz",
+//                                formattedPrice: "$4.00",
+//                                productID: 12,
+//                                price: "4.00"
+//                            )
+//                        ),
+//                        .variableParentProduct(
+//                            .init(
+//                                id: .init(),
+//                                name: "Variable mocha",
+//                                productImageSource: "https://pd.w.org/2024/12/986762d0d4d4cf17.82435881-scaled.jpeg",
+//                                productID: 16
+//                            )
+//                        )
+//                    ],
+//                    hasMoreItems: false
+//                )
+//    )
+//}
+//
+//@available(iOS 17.0, *)
+//#Preview("Loading") {
+//    let posModel = PointOfSaleAggregateModel(
+//        itemsController: PointOfSalePreviewItemsController(),
+//        cardPresentPaymentService: CardPresentPaymentPreviewService(),
+//        orderController: PointOfSalePreviewOrderController())
+//    ItemList(state: .loading([]))
+//        .environment(posModel)
+//}
+//
+//#endif
