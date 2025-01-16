@@ -5,6 +5,7 @@ import protocol Yosemite.PointOfSaleItemServiceProtocol
 import struct Yosemite.POSVariableParentProduct
 import class Yosemite.Store
 
+@available(iOS 17.0, *)
 protocol PointOfSaleItemsControllerProtocol {
     var itemsViewState: ItemsViewState { get }
     func loadItems(base: ItemListBaseItem) async
@@ -14,7 +15,7 @@ protocol PointOfSaleItemsControllerProtocol {
 
 @Observable
 @available(iOS 17.0, *)
-class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
+final class PointOfSaleItemsController: PointOfSaleItemsControllerProtocol {
     private(set) var itemsViewState: ItemsViewState = ItemsViewState(containerState: .loading,
                    itemsStack: ItemsStackState(root: .loading([]),
                                                itemStates: [:]))

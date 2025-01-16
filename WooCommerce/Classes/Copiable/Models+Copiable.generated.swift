@@ -50,6 +50,7 @@ extension WooCommerce.AggregateOrderItem {
     }
 }
 
+@available(iOS 17.0, *)
 extension WooCommerce.ItemsStackState {
     func copy(
         root: CopiableProp<ItemListState> = .copy,
@@ -65,6 +66,7 @@ extension WooCommerce.ItemsStackState {
     }
 }
 
+@available(iOS 17.0, *)
 extension WooCommerce.ItemsViewState {
     func copy(
         containerState: CopiableProp<ItemsContainerState> = .copy,

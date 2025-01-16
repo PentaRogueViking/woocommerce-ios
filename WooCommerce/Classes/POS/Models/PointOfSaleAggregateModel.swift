@@ -9,6 +9,7 @@ import struct Yosemite.POSCartItem
 import enum Yosemite.POSItem
 import enum Yosemite.SystemStatusAction
 
+@available(iOS 17.0, *)
 protocol PointOfSaleAggregateModelProtocol {
     var orderStage: PointOfSaleOrderStage { get }
 
@@ -39,7 +40,7 @@ protocol PointOfSaleAggregateModelProtocol {
 
 @available(iOS 17.0, *)
 @Observable
-class PointOfSaleAggregateModel: PointOfSaleAggregateModelProtocol {
+final class PointOfSaleAggregateModel: PointOfSaleAggregateModelProtocol {
     private(set) var orderStage: PointOfSaleOrderStage = .building
 
     private(set) var cardReaderConnectionStatus: CardPresentPaymentReaderConnectionStatus = .disconnected
