@@ -17,7 +17,8 @@ struct ItemListView: View {
     private var isHeaderBannerDismissed: Bool = false
 
     var body: some View {
-        NavigationStack {
+        print("View with refreshable recomputed")
+        return NavigationStack {
             VStack {
                 headerView
                 switch itemListState {
@@ -36,6 +37,7 @@ struct ItemListView: View {
             })
         }
         .refreshable {
+            print("Pull to refresh")
             await posModel.loadItems(base: .root)
         }
         .background(Color.posPrimaryBackground)
