@@ -130,11 +130,17 @@ private extension PointOfSaleOrderController {
     func totals(for order: Order) -> PointOfSaleOrderTotals {
         let totalsCalculator = OrderTotalsCalculator(for: order,
                                                      using: currencyFormatter)
+
+        let formatter: (String) -> String = { [weak self] value in
+            self?.formattedPrice(value, currency: order.currency) ?? ""
+        }
+
         return PointOfSaleOrderTotals(
-            cartTotal: formattedPrice(totalsCalculator.itemsTotal.stringValue,
-                                      currency: order.currency) ?? "",
-            orderTotal: formattedPrice(order.total, currency: order.currency) ?? "",
-            taxTotal: formattedPrice(order.totalTax, currency: order.currency) ?? "")
+            cartTotal: totalsCalculator.itemsTotal.stringValue,
+            orderTotal: order.total,
+            taxTotal: order.totalTax,
+            formatter: formatter
+        )
     }
 
     func formattedPrice(_ price: String?, currency: String?) -> String? {

@@ -6,9 +6,10 @@ import Combine
 class PointOfSalePreviewOrderController: PointOfSaleOrderControllerProtocol {
     var orderStatePublisher: AnyPublisher<PointOfSaleInternalOrderState, Never> = Just(
         .loaded(
-            .init(cartTotal: "$10.50",
-                  orderTotal: "$12.00",
-                  taxTotal: "$1.50"),
+            .init(cartTotal: "10.50",
+                  orderTotal: "12.00",
+                  taxTotal: "1.50",
+                  formatter: { "$\($0)" }),
             OrderFactory.emptyNewOrder
         )
     ).eraseToAnyPublisher()

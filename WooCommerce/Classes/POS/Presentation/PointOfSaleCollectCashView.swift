@@ -13,9 +13,10 @@ struct PointOfSaleCollectCashView: View {
     @State private var changeDueMessage: String?
 
     let orderTotal: String
+    let orderTotalFormatted: String
 
     private var formattedOrderTotal: String {
-        String.localizedStringWithFormat(Localization.backNavigationSubtitle, orderTotal)
+        String.localizedStringWithFormat(Localization.backNavigationSubtitle, orderTotalFormatted)
     }
 
     @StateObject private var textFieldViewModel = FormattableAmountTextFieldViewModel(size: .extraLarge,
@@ -188,7 +189,7 @@ private extension PointOfSaleCollectCashView {
         itemsController: PointOfSalePreviewItemsController(),
         cardPresentPaymentService: CardPresentPaymentPreviewService(),
         orderController: PointOfSalePreviewOrderController())
-    PointOfSaleCollectCashView(orderTotal: "$1.23")
+    PointOfSaleCollectCashView(orderTotal: "1.23", orderTotalFormatted: "$1.23")
         .environmentObject(posModel)
 }
 #endif

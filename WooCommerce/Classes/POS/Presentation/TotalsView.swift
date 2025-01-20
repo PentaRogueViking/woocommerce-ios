@@ -125,19 +125,19 @@ private extension TotalsView {
         let totalsLoading = orderTotals == nil
         VStack {
             subtotalFieldView(title: Localization.subtotal,
-                              formattedPrice: orderTotals?.cartTotal,
+                              formattedPrice: orderTotals?.cartTotalFormatted,
                               shimmeringActive: totalsLoading,
                               matchedGeometryId: Constants.matchedGeometrySubtotalId)
             Spacer().frame(height: Constants.subtotalsVerticalSpacing)
             subtotalFieldView(title: Localization.taxes,
-                              formattedPrice: orderTotals?.taxTotal,
+                              formattedPrice: orderTotals?.taxTotalFormatted,
                               shimmeringActive: totalsLoading,
                               matchedGeometryId: Constants.matchedGeometryTaxId)
             Spacer().frame(height: Constants.totalVerticalSpacing)
             Divider()
                 .overlay(Constants.separatorColor)
             Spacer().frame(height: Constants.totalVerticalSpacing)
-            totalFieldView(formattedPrice: orderTotals?.orderTotal,
+            totalFieldView(formattedPrice: orderTotals?.orderTotalFormatted,
                            shimmeringActive: totalsLoading,
                            matchedGeometryId: Constants.matchedGeometryTotalId)
         }
@@ -241,14 +241,14 @@ private extension TotalsView {
             switch cashPaymentState {
             case .collectingCash:
                 if case .loaded(let total) = posModel.orderState {
-                    PointOfSaleCollectCashView(orderTotal: total.orderTotal)
+                    PointOfSaleCollectCashView(orderTotal: total.orderTotal, orderTotalFormatted: total.orderTotalFormatted)
                         .transition(.move(edge: .trailing))
                 }
             case .paymentSuccess:
                 if case .loaded(let total) = posModel.orderState {
                     HStack(alignment: .center) {
                         Spacer()
-                        PointOfSaleCardPresentPaymentInLineMessage(messageType: .paymentSuccess(viewModel: .init(formattedOrderTotal: total.orderTotal)))
+                        PointOfSaleCardPresentPaymentInLineMessage(messageType: .paymentSuccess(viewModel: .init(formattedOrderTotal: total.orderTotalFormatted)))
                         Spacer()
                     }
                 }
