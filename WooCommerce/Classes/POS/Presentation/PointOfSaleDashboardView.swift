@@ -54,7 +54,7 @@ struct PointOfSaleDashboardView: View {
                                  floatingSize.height + Constants.floatingControlVerticalOffset))
         .environment(\.posBackgroundAppearance, posModel.paymentState != .card(.processingPayment) ? .primary : .secondary)
         .animation(.easeInOut, value: posModel.itemsViewState.containerState == .loading)
-        .background(Color.posPrimaryBackground)
+        .background(Color.posSurface)
         .navigationBarBackButtonHidden(true)
         .posModal(item: $posModel.cardPresentPaymentOnboardingViewModel, onDismiss: {
             posModel.cancelCardPaymentsOnboarding()
@@ -177,8 +177,13 @@ private extension PointOfSaleDashboardView {
 #if DEBUG
 @available(iOS 17.0, *)
 #Preview {
+    let posModel = PointOfSaleAggregateModel(
+        itemsController: PointOfSalePreviewItemsController(),
+        cardPresentPaymentService: CardPresentPaymentPreviewService(),
+        orderController: PointOfSalePreviewOrderController())
     return NavigationStack {
         PointOfSaleDashboardView()
     }
+    .environmentObject(posModel)
 }
 #endif
