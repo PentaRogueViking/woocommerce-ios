@@ -34,6 +34,9 @@ final class ApplicationPasswordAuthorizationWebViewController: UIViewController 
         return indicator
     }()
 
+    /// The view controller that was presenting the application password flow.
+    private var previousViewController: UIViewController?
+
     /// WP Core requires that the UUID has lowercased letters.
     private let appID = UUID().uuidString.lowercased()
 
@@ -50,9 +53,11 @@ final class ApplicationPasswordAuthorizationWebViewController: UIViewController 
     private var authorizationURL: String?
 
     init(viewModel: ApplicationPasswordAuthorizationViewModel,
+         previousViewController: UIViewController?,
          analytics: Analytics = ServiceLocator.analytics,
          onSuccess: @escaping (ApplicationPassword, UINavigationController?) -> Void) {
         self.viewModel = viewModel
+        self.previousViewController = previousViewController
         self.onSuccess = onSuccess
         self.analytics = analytics
         super.init(nibName: nil, bundle: nil)
@@ -157,7 +162,20 @@ private extension ApplicationPasswordAuthorizationWebViewController {
                 guard let url = try await viewModel.fetchAuthURL() else {
                     DDLogError("⛔️ No authorization URL found for application passwords")
                     analytics.track(.applicationPasswordAuthorizationURLNotAvailable)
-                    return showErrorAlert(message: Localization.applicationPasswordDisabled)
+
+                    let errorUI = applicationPasswordDisabledUI(for: viewModel.siteURL)
+                    // When the error view controller is popped, navigate to previous VC
+                    errorUI.navigationItem.leftBarButtonItem = UIBarButtonItem(
+                        image: UIImage(systemName: "chevron.backward"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(navigateToPreviousViewController)
+                    )
+
+                    // Push instead of present
+                    navigationController?.pushViewController(errorUI, animated: true)
+
+                    return
                 }
                 loadAuthorizationPage(url: url)
             } catch {
@@ -168,6 +186,15 @@ private extension ApplicationPasswordAuthorizationWebViewController {
                 })
             }
             activityIndicator.stopAnimating()
+        }
+    }
+
+    /// Pops to the previous view controller (if provided) or pops one level otherwise.
+    @objc private func navigateToPreviousViewController() {
+        if let previousViewController, let navigationController {
+            navigationController.popToViewController(previousViewController, animated: true)
+        } else {
+            navigationController?.popViewController(animated: true)
         }
     }
 
@@ -219,6 +246,14 @@ private extension ApplicationPasswordAuthorizationWebViewController {
             alertController.addAction(retryAction)
         }
         present(alertController, animated: true)
+    }
+
+    /// The error screen to be displayed when the user tries to log in with site credentials
+    /// with application password disabled.
+    ///
+    func applicationPasswordDisabledUI(for siteURL: String) -> UIViewController {
+        let viewModel = ApplicationPasswordDisabledViewModel(siteURL: siteURL, previousViewController: previousViewController)
+        return ULErrorViewController(viewModel: viewModel)
     }
 }
 
