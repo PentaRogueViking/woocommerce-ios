@@ -34,7 +34,7 @@
 
     We use Ruby to manage the third party dependencies and other tools and automation.
 
-2. Clone project in the folder of your preference
+2. Clone project in the folder of your preferenc
 
     ```bash
     git clone https://github.com/woocommerce/woocommerce-ios.git
