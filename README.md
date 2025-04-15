@@ -2,7 +2,7 @@
 
 <h1 align="center"><img src="docs/images/logo-woo.svg" width="300"><br>for iOS</h1>
 
-<p align="center">A Jetpack-powered companion app for WooCommerce.</p>
+<p align="center">A Jetpack-powered1 companion app for WooCommerce.</p>
 
 <p align="center">
     <a href="https://circleci.com/gh/woocommerce/woocommerce-ios">
