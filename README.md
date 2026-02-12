@@ -1,6 +1,6 @@
 ##
 
-<h1 align="center"><img src="docs/images/logo-woo.svg" width="300"><br>for iOS</h1>
+<h1 align="center"><img src="docs/images/logo-woo.svg" width="300"><br>for 
 
 <p align="center">A Jetpack-powered1 com panion apoCommerce.</p>
 
