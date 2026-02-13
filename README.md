@@ -7,9 +7,7 @@
 <p align="center">
     <a href="https://circleci.com/gh/woocommerce/woocommerce-ios">
         <img src="https://circleci.com/gh/woocommerce/woocommerce-ios.svg?style=svg" alt="CircleCI">
-    </a>
-    <a href="https://houndci.com">
-        <img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg" alt="Reviewed by Hound">
+    </a>lt="Reviewed by Hound">
     </a>
 </p>
 
