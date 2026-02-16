@@ -11,7 +11,6 @@
 </p>
 
 <p align="center">
-    <a href="#-build-instructions">Build Instructions</a> •
     <a href="#-documentation">Documentation</a> •
     <a href="#-contributing">Contributing</a> •
     <a href="#-automation">Automation</a> •
